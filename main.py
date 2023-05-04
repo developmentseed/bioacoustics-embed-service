@@ -6,6 +6,7 @@ import librosa
 from absl import logging
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
+from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from chirp.inference import models
 from chirp.configs.inference import raw_soundscapes
@@ -33,11 +34,16 @@ async def predict_audio(audio_file: UploadFile = File(...)):
         # buffer.write(content)
         buffer = io.BytesIO(content)
         audio = load_audio(buffer)
-        # waveform = np.zeros(5 * 32000, dtype=np.float32)
-        outputs = model.embed(audio)
-        print('Done')
+        outputs = None
+        if (audio.any()):
+            # waveform = np.zeros(5 * 32000, dtype=np.float32)
+            try:
+                outputs = model.embed(audio)
+            except Exception as e:
+                logging.error('Failed to prepare embeddings', e)
+                raise HTTPException(500, detail=f'{e}')
 
-    return {"embedding": outputs}
+            return {"embedding": outputs}
 
 # based on load_audio method from chirp/embedlib.py
 def load_audio(buffer) -> np.ndarray | None:
