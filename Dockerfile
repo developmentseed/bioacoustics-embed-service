@@ -12,21 +12,16 @@ COPY requirements.txt .
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
-###
-#May be use this block if we want to install chirp
-# RUN pip install poetry
-# RUN pip install https://github.com/yoziru/jax/releases/download/jaxlib-v0.4.6/jaxlib-0.4.6-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
-
-# RUN git clone https://github.com/google-research/chirp.git chirpgit
-# WORKDIR /app/chirpgit
-
-# RUN poetry install
-
-# WORKDIR /app
-# RUN mv chirpgit/chirp /app/chirp/
-###
-
 RUN pip install https://github.com/google-research/chirp/archive/refs/heads/main.zip
+
+# Download bird classifier model
+RUN wget https://tfhub.dev/google/bird-vocalization-classifier/2?tf-hub-format=compressed -O bird-vocalization-classifier.tar.gz
+RUN mkdir savedmodel
+RUN tar -zxvf bird-vocalization-classifier.tar.gz -C savedmodel
+
+# label.csv needs to be in the /app folder
+RUN cp savedmodel/assets/label.csv .
+
 
 # Copy the rest of the application code
 COPY . .
