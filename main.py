@@ -10,6 +10,7 @@ from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from chirp.inference import models
 from chirp.configs.inference import raw_soundscapes
+from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
@@ -17,7 +18,8 @@ SAVED_MODEL_PATH = str(Path('.').resolve())
 configs = raw_soundscapes.get_config()
 model_configs = configs.embed_fn_config.model_config
 
-model = models.TaxonomyModelTF(model_configs.window_size_s, SAVED_MODEL_PATH, model_configs.hop_size_s, model_configs.sample_rate)
+print(model_configs)
+model = models.TaxonomyModelTF(32000, SAVED_MODEL_PATH, 5.0, 5.0)
 
 class AudioInput(BaseModel):
     audio_base64: str
@@ -26,24 +28,29 @@ class AudioInput(BaseModel):
 def health():
     return {"status": "success"}
 
-@app.post("/predict")
+@app.post("/embed")
 async def predict_audio(audio_file: UploadFile = File(...)):
     with open(f"temp_{audio_file.filename}", "wb") as buffer:
         content = await audio_file.read()
         # save the wav for now
         # buffer.write(content)
         buffer = io.BytesIO(content)
+        print('reading audtio...')
         audio = load_audio(buffer)
         outputs = None
         if (audio.any()):
             # waveform = np.zeros(5 * 32000, dtype=np.float32)
             try:
+                print('preparing embedding...')
                 outputs = model.embed(audio)
+                print(outputs.embeddings.shape)
             except Exception as e:
                 logging.error('Failed to prepare embeddings', e)
                 raise HTTPException(500, detail=f'{e}')
 
-            return {"embedding": outputs}
+            return {
+                "embedding": jsonable_encoder(outputs.embeddings.tolist())
+                }
 
 # based on load_audio method from chirp/embedlib.py
 def load_audio(buffer) -> np.ndarray | None:
