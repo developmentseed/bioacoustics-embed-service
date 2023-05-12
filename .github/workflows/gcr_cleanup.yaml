@@ -17,16 +17,21 @@ jobs:
   gcr-cleaner:
     runs-on: 'ubuntu-latest'
     steps:
-      - name: Login to Google Container Registry
-        uses: docker/login-action@v1 
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v1'
         with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCR_JSON_KEY }}
+          credentials_json: '${{ secrets.GCR_JSON_KEY }}'
+
+      - name: Get access token from Cloud SDK
+        id: gcloud_access_token
+        run: |
+          access_token=$(gcloud auth application-default print-access-token --project ${{ env.PROJECT_ID }})
+          echo "::add-mask::$access_token"
+          echo "::set-output name=access_token::$access_token"
 
       - uses: 'docker://us-docker.pkg.dev/gcr-cleaner/gcr-cleaner/gcr-cleaner-cli'
         with:
-          # keep 3 latest images and delete the rest
           args: >-
             -repo=gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}
+            -token=${{ steps.gcloud_access_token.outputs.access_token }}
             -keep=3
