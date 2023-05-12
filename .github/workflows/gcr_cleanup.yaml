@@ -1,0 +1,28 @@
+name: Auto delete old images from GCR
+
+on:
+  schedule:
+    - cron: '0 0 */1 * *' # runs daily
+  workflow_dispatch: # allows for manual invocation
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  IMAGE: bioacoustics-embed-service
+
+jobs:
+  gcr-cleaner:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Login to Google Container Registry
+        uses: docker/login-action@v1 
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.GCR_JSON_KEY }}
+
+      - uses: 'docker://us-docker.pkg.dev/gcr-cleaner/gcr-cleaner/gcr-cleaner-cli'
+        with:
+          # keep 3 latest images and delete the rest
+          args: >-
+            -repo=gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}
+            -keep=3
