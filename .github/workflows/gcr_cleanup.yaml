@@ -4,9 +4,13 @@ on:
   schedule:
     - cron: '0 0 */1 * *' # runs daily
   workflow_dispatch: # allows for manual invocation
+  # TODO: for testing only, remove after testing
+  push:
+    branches:
+    - gh-action
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: dulcet-clock-385511
   IMAGE: bioacoustics-embed-service
 
 jobs:
