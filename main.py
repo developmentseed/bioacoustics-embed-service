@@ -9,17 +9,19 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from chirp.inference import models
-from chirp.configs.inference import raw_soundscapes
 from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
 SAVED_MODEL_PATH = str(Path('.').resolve())
-configs = raw_soundscapes.get_config()
-model_configs = configs.embed_fn_config.model_config
+model_configs = {
+    'hop_size_s': 5.0,
+    'sample_rate': 32000,
+    'window_size_s': 5.0
+}
 
 print(model_configs)
-model = models.TaxonomyModelTF(32000, SAVED_MODEL_PATH, 5.0, 5.0)
+model = models.TaxonomyModelTF(model_configs['sample_rate'], SAVED_MODEL_PATH, model_configs['hop_size_s'], model_configs['window_size_s'])
 
 class AudioInput(BaseModel):
     audio_base64: str
@@ -58,7 +60,7 @@ def load_audio(buffer) -> np.ndarray | None:
         warnings.simplefilter('ignore')
         try:
             audio, _ = librosa.load(
-                buffer, sr=model_configs.sample_rate, res_type='polyphase'
+                buffer, sr=model_configs['sample_rate'], res_type='polyphase'
             )
         except Exception as inst:  # pylint: disable=broad-except
             # We have no idea what can go wrong in librosa, so we catch a broad
