@@ -3,8 +3,7 @@ name: Build Docker Image and Push to GCR
 on:
   push:
     branches:
-    - master
-    - gh-action
+    - main
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
