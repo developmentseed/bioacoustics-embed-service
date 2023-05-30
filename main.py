@@ -9,6 +9,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from chirp.inference import models
+from chirp.projects.bootstrap.display import plot_audio_melspec
 from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
@@ -21,14 +22,21 @@ model_configs = {
 }
 
 print(model_configs)
-model = models.TaxonomyModelTF(model_configs['sample_rate'], SAVED_MODEL_PATH, model_configs['hop_size_s'], model_configs['window_size_s'])
+model = models.TaxonomyModelTF(
+    model_configs['sample_rate'],
+    SAVED_MODEL_PATH, model_configs['hop_size_s'],
+    model_configs['window_size_s']
+)
+
 
 class AudioInput(BaseModel):
     audio_base64: str
 
+
 @app.get("/")
 def health():
     return {"status": "success"}
+
 
 @app.post("/embed")
 async def predict_audio(audio_file: UploadFile = File(...)):
@@ -53,6 +61,28 @@ async def predict_audio(audio_file: UploadFile = File(...)):
             return {
                 "embedding": jsonable_encoder(outputs.embeddings.tolist())
                 }
+
+
+@app.post("/melspectrogram")
+async def get_melspectrogram(audio_file: UploadFile = File(...)):
+    with open(f"temp_{audio_file.filename}", "wb") as buffer:
+        content = await audio_file.read()
+        # save the wav for now
+        # buffer.write(content)
+        buffer = io.BytesIO(content)
+        print('reading audtio...')
+        audio = load_audio(buffer)
+        if (audio.any()):
+            try:
+                print('producing melspectrogram...')
+                spec = plot_audio_melspec(audio, model_configs['sample_rate'])
+                print(spec)
+            except Exception as e:
+                logging.error('Failed to produce melspectrogram', e)
+                raise HTTPException(500, detail=f'{e}')
+
+            return spec
+
 
 # based on load_audio method from chirp/embedlib.py
 def load_audio(buffer) -> np.ndarray | None:
