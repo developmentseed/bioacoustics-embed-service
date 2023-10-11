@@ -1,4 +1,4 @@
-name: Auto delete old images from GCR
+name: Auto delete old images from A2O GCR
 
 on:
   schedule:
@@ -10,7 +10,7 @@ on:
     - gh-action
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: ${{ secrets.A2O_GCP_PROJECT_ID }}
   IMAGE: bioacoustics-embed-service
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Google Auth
         uses: 'google-github-actions/auth@v1'
         with:
-          credentials_json: '${{ secrets.GCR_JSON_KEY }}'
+          credentials_json: '${{ secrets.A2O_GCR_JSON_KEY }}'
 
       - name: Get access token from Cloud SDK
         id: gcloud_access_token
