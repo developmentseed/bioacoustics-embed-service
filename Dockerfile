@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 RUN pip install https://github.com/google-research/chirp/archive/refs/heads/main.zip
 
 # Download bird classifier model
-RUN wget https://tfhub.dev/google/bird-vocalization-classifier/2?tf-hub-format=compressed -O bird-vocalization-classifier.tar.gz
+RUN wget https://tfhub.dev/google/bird-vocalization-classifier/4?tf-hub-format=compressed -O bird-vocalization-classifier.tar.gz
 RUN mkdir savedmodel
 RUN tar -zxvf bird-vocalization-classifier.tar.gz -C savedmodel
 

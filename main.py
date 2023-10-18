@@ -9,6 +9,7 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from chirp.inference import models
+from chirp.taxonomy import namespace
 from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
@@ -21,7 +22,7 @@ model_configs = {
 }
 
 print(model_configs)
-model = models.TaxonomyModelTF(model_configs['sample_rate'], SAVED_MODEL_PATH, model_configs['hop_size_s'], model_configs['window_size_s'])
+model = models.TaxonomyModelTF(SAVED_MODEL_PATH, namespace.ClassList, model_configs['sample_rate'], model_configs['hop_size_s'], model_configs['window_size_s'])
 
 class AudioInput(BaseModel):
     audio_base64: str
