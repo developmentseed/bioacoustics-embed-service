@@ -12,7 +12,7 @@ COPY requirements.txt .
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
-RUN pip install https://github.com/google-research/chirp/archive/refs/heads/main.zip
+RUN pip install https://github.com/google-research/perch/archive/refs/heads/main.zip
 
 # Download bird classifier model
 RUN wget https://tfhub.dev/google/bird-vocalization-classifier/4?tf-hub-format=compressed -O bird-vocalization-classifier.tar.gz
@@ -34,3 +34,6 @@ ENV PORT=80
 
 # Run the command to start Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+
+# Use this in case you need to debug the container
+# CMD ["tail", "-f", "/dev/null"]

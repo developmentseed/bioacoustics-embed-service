@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from chirp.inference import models
 from chirp.taxonomy import namespace
 from fastapi.encoders import jsonable_encoder
+from ml_collections import config_dict
 
 app = FastAPI()
 
@@ -18,11 +19,12 @@ SAVED_MODEL_PATH = str(Path('.').resolve())
 model_configs = {
     'hop_size_s': 5.0,
     'sample_rate': 32000,
-    'window_size_s': 5.0
+    'window_size_s': 5.0,
+    'model_path': SAVED_MODEL_PATH
 }
 
-print(model_configs)
-model = models.TaxonomyModelTF(SAVED_MODEL_PATH, namespace.ClassList, model_configs['sample_rate'], model_configs['hop_size_s'], model_configs['window_size_s'])
+mc = config_dict.ConfigDict(model_configs)
+model = models.TaxonomyModelTF.from_config(mc)
 
 class AudioInput(BaseModel):
     audio_base64: str
