@@ -35,3 +35,4 @@ python-multipart
 absl-py
 jax
 jaxlib
+ai-edge-litert-nightly
