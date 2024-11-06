@@ -1,6 +1,6 @@
 # Use an official Python base image
 FROM python:3.10
-RUN apt-get update && apt-get install -y wget curl libopenblas-dev git
+RUN apt-get update && apt-get install -y wget curl libopenblas-dev git ffmpeg libsndfile-dev libsndfile1
 RUN pip install --upgrade pip
 
 # Set the working directory
@@ -12,7 +12,7 @@ COPY requirements.txt .
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
 
-RUN pip install https://github.com/google-research/perch/archive/refs/heads/main.zip
+RUN pip install git+https://github.com/google-research/perch.git
 
 # Download bird classifier model
 RUN wget https://tfhub.dev/google/bird-vocalization-classifier/4?tf-hub-format=compressed -O bird-vocalization-classifier.tar.gz

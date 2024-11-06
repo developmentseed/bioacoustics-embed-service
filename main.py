@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
-from chirp.inference import models
+from chirp.projects.zoo import taxonomy_model_tf
 from chirp.taxonomy import namespace
 from fastapi.encoders import jsonable_encoder
 from ml_collections import config_dict
@@ -24,7 +24,7 @@ model_configs = {
 }
 
 mc = config_dict.ConfigDict(model_configs)
-model = models.TaxonomyModelTF.from_config(mc)
+model = taxonomy_model_tf.TaxonomyModelTF.from_config(mc)
 
 class AudioInput(BaseModel):
     audio_base64: str
